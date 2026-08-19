@@ -346,97 +346,177 @@
     manageTeamsTableBody.innerHTML = '';
     teams.forEach(t => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-family:var(--mono); font-weight:700; color:#fff;">${t.id}</td>
-        <td><input type="text" value="${t.name}" id="name_${t.id}" class="form-input" style="padding:4px 8px; font-size:12.5px;"></td>
-        <td>
-          <div style="display:flex; gap:4px;">
-            <input type="text" value="${t.password}" id="pass_${t.id}" class="form-input mono" style="padding:4px 8px; font-size:12.5px;">
-            <button class="btn" onclick="window.mixRowPassword('${t.id}')" style="padding:4px 6px; font-size:11px;" title="Generate new mixed password">⚡</button>
-          </div>
-        </td>
-        <td>
-          <button class="btn btn-success" onclick="window.saveTeamDetails('${t.id}')" style="padding:4px 8px; font-size:11px;">Save</button>
-          <button class="btn btn-danger" onclick="window.deleteTeam('${t.id}')" style="padding:4px 8px; font-size:11px;">Delete</button>
-        </td>
-      `;
+      tr.dataset.teamId = t.id;
+
+      const tdId = document.createElement('td');
+      tdId.style.fontFamily = 'var(--mono)';
+      tdId.style.fontWeight = '700';
+      tdId.style.color = '#fff';
+      tdId.textContent = t.id;
+
+      const tdName = document.createElement('td');
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = t.name;
+      nameInput.className = 'form-input team-name-input';
+      nameInput.style.padding = '4px 8px';
+      nameInput.style.fontSize = '12.5px';
+      tdName.appendChild(nameInput);
+
+      const tdPass = document.createElement('td');
+      const passWrap = document.createElement('div');
+      passWrap.style.display = 'flex';
+      passWrap.style.gap = '4px';
+      passWrap.style.alignItems = 'center';
+
+      const passInput = document.createElement('input');
+      passInput.type = 'text';
+      passInput.value = t.password;
+      passInput.className = 'form-input mono team-pass-input';
+      passInput.style.padding = '4px 8px';
+      passInput.style.fontSize = '12.5px';
+
+      const mixBtn = document.createElement('button');
+      mixBtn.type = 'button';
+      mixBtn.className = 'btn btn-mix-pass';
+      mixBtn.style.padding = '4px 8px';
+      mixBtn.style.fontSize = '11px';
+      mixBtn.title = 'Generate new mixed password';
+      mixBtn.textContent = '⚡';
+
+      passWrap.appendChild(passInput);
+      passWrap.appendChild(mixBtn);
+      tdPass.appendChild(passWrap);
+
+      const tdActions = document.createElement('td');
+
+      const saveBtn = document.createElement('button');
+      saveBtn.type = 'button';
+      saveBtn.className = 'btn btn-success btn-save-team';
+      saveBtn.style.padding = '4px 8px';
+      saveBtn.style.fontSize = '11px';
+      saveBtn.textContent = 'Save';
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'btn btn-danger btn-delete-team';
+      deleteBtn.style.padding = '4px 8px';
+      deleteBtn.style.fontSize = '11px';
+      deleteBtn.style.marginLeft = '4px';
+      deleteBtn.textContent = 'Delete';
+
+      const feedback = document.createElement('span');
+      feedback.className = 'action-feedback';
+      feedback.style.fontSize = '11px';
+      feedback.style.marginLeft = '6px';
+      feedback.style.fontWeight = '600';
+
+      tdActions.appendChild(saveBtn);
+      tdActions.appendChild(deleteBtn);
+      tdActions.appendChild(feedback);
+
+      tr.appendChild(tdId);
+      tr.appendChild(tdName);
+      tr.appendChild(tdPass);
+      tr.appendChild(tdActions);
+
       manageTeamsTableBody.appendChild(tr);
     });
   }
 
-  window.mixRowPassword = function(teamId) {
-    const passInput = document.getElementById(`pass_${teamId}`);
-    if (passInput) {
-      passInput.value = generateMixedPassword(8);
+  // Event Delegation for Participant Table Actions (Save, Delete, Mix Password)
+  manageTeamsTableBody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    const tr = btn.closest('tr');
+    if (!tr) return;
+
+    const teamId = tr.dataset.teamId;
+    const nameInput = tr.querySelector('.team-name-input');
+    const passInput = tr.querySelector('.team-pass-input');
+    const feedback = tr.querySelector('.action-feedback');
+
+    // 1. MIX PASSWORD
+    if (btn.classList.contains('btn-mix-pass')) {
+      const newPass = generateMixedPassword(8);
+      passInput.value = newPass;
+      if (feedback) {
+        feedback.textContent = '⚡ Mixed';
+        feedback.style.color = 'var(--horizon-4)';
+        setTimeout(() => { feedback.textContent = ''; }, 2000);
+      }
+      return;
     }
-  };
 
-  createTeamForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    createTeamMsg.classList.add('hidden');
-    const id = newTeamId.value.trim();
-    const name = newTeamName.value.trim();
-    const password = newTeamPassword.value.trim();
+    // 2. SAVE TEAM DETAILS
+    if (btn.classList.contains('btn-save-team')) {
+      const name = nameInput.value.trim();
+      const password = passInput.value.trim();
 
-    try {
-      const res = await fetch('/api/admin/teams', {
-        method: 'POST',
-        headers: adminHeaders(),
-        body: JSON.stringify({ id, name, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to add team.');
+      if (!name || !password) {
+        if (feedback) {
+          feedback.textContent = '✕ Required';
+          feedback.style.color = 'var(--bad)';
+        }
+        return;
+      }
 
-      createTeamMsg.textContent = `✓ Participant ${data.team.id} created successfully!`;
-      createTeamMsg.style.color = 'var(--ok)';
-      createTeamMsg.classList.remove('hidden');
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
 
-      newTeamId.value = '';
-      newTeamName.value = '';
-      newTeamPassword.value = '';
+        const res = await fetch(`/api/admin/teams/${encodeURIComponent(teamId)}`, {
+          method: 'PUT',
+          headers: adminHeaders(),
+          body: JSON.stringify({ name, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update team.');
 
-      fetchTeamsList();
-      fetchOverview();
-    } catch (err) {
-      createTeamMsg.textContent = `✕ ${err.message}`;
-      createTeamMsg.style.color = 'var(--bad)';
-      createTeamMsg.classList.remove('hidden');
+        if (feedback) {
+          feedback.textContent = '✓ Saved';
+          feedback.style.color = 'var(--ok)';
+          setTimeout(() => { feedback.textContent = ''; }, 2500);
+        }
+        fetchOverview();
+      } catch (err) {
+        if (feedback) {
+          feedback.textContent = '✕ Error';
+          feedback.style.color = 'var(--bad)';
+        }
+        alert('Error saving team: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+      return;
+    }
+
+    // 3. DELETE TEAM
+    if (btn.classList.contains('btn-delete-team')) {
+      if (!confirm(`Delete team ${teamId}? This action cannot be undone.`)) return;
+
+      try {
+        btn.disabled = true;
+        btn.textContent = '...';
+
+        const res = await fetch(`/api/admin/teams/${encodeURIComponent(teamId)}`, {
+          method: 'DELETE',
+          headers: adminHeaders()
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete team.');
+
+        tr.remove();
+        fetchOverview();
+      } catch (err) {
+        alert('Error deleting team: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+      }
     }
   });
-
-  window.saveTeamDetails = async function(teamId) {
-    const nameInput = document.getElementById(`name_${teamId}`);
-    const passInput = document.getElementById(`pass_${teamId}`);
-    const name = nameInput.value.trim();
-    const password = passInput.value.trim();
-
-    try {
-      const res = await fetch(`/api/admin/teams/${teamId}`, {
-        method: 'PUT',
-        headers: adminHeaders(),
-        body: JSON.stringify({ name, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to update team.');
-
-      alert(`Team ${teamId} updated!`);
-      fetchTeamsList();
-      fetchOverview();
-    } catch (e) {
-      alert('Error updating team: ' + e.message);
-    }
-  };
-
-  window.deleteTeam = async function(teamId) {
-    if (!confirm(`Delete team ${teamId}? This action cannot be undone.`)) return;
-
-    try {
-      const res = await fetch(`/api/admin/teams/${teamId}`, {
-        method: 'DELETE',
-        headers: adminHeaders()
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to delete team.');
 
       fetchTeamsList();
       fetchOverview();
