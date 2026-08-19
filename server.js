@@ -178,7 +178,7 @@ function authTeam(req, res, next) {
 
 // Middleware: Authenticate Admin Token
 function authAdmin(req, res, next) {
-  const token = req.headers['x-admin-token'];
+  const token = req.headers['x-admin-token'] || req.query.token;
   if (!token || !adminTokens.has(token)) {
     return res.status(401).json({ error: 'Unauthorized admin access.' });
   }
@@ -699,11 +699,46 @@ app.post('/api/admin/teams/randomize-passwords', authAdmin, (req, res) => {
   res.json({ message: 'All participant passwords updated with mixed passwords.', teams: teamsData });
 });
 
+// Bulk generate participant teams with mixed passwords
+app.post('/api/admin/teams/bulk-generate', authAdmin, (req, res) => {
+  const { count } = req.body;
+  const num = parseInt(count, 10) || 10;
+
+  let maxId = 0;
+  teamsData.forEach(t => {
+    const match = t.id.match(/^TEAM(\d+)$/i);
+    if (match) {
+      const n = parseInt(match[1], 10);
+      if (n > maxId) maxId = n;
+    }
+  });
+
+  const createdTeams = [];
+  for (let i = 1; i <= num; i++) {
+    const nextNum = maxId + i;
+    const teamId = `TEAM${String(nextNum).padStart(3, '0')}`;
+    const teamName = `Team Participant ${String(nextNum).padStart(2, '0')}`;
+    const password = generateMixedPassword(8);
+
+    const newTeam = { id: teamId, name: teamName, password };
+    teamsData.push(newTeam);
+    createdTeams.push(newTeam);
+    getOrCreateTeamSession(newTeam);
+  }
+
+  saveTeamsData();
+  saveState();
+
+  res.json({ message: `Successfully generated ${num} participant teams with mixed passwords.`, createdCount: num });
+});
+
 // Export Credentials CSV for printing/distributing
 app.get('/api/admin/teams/export-credentials', authAdmin, (req, res) => {
-  let csv = 'Team ID,Team Name,Password\n';
+  let csv = 'Team ID,Team Name,Password,Login URL\n';
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const baseUrl = `${protocol}://${req.get('host')}`;
   teamsData.forEach(t => {
-    csv += `"${t.id}","${t.name}","${t.password}"\n`;
+    csv += `"${t.id}","${t.name}","${t.password}","${baseUrl}"\n`;
   });
 
   res.setHeader('Content-Type', 'text/csv');

@@ -247,6 +247,80 @@
     });
   }
 
+  const bulkGenerateBtn = document.getElementById('bulkGenerateBtn');
+  const printSlipsBtn = document.getElementById('printSlipsBtn');
+  const slipsModal = document.getElementById('slipsModal');
+  const closeSlipsBtn = document.getElementById('closeSlipsBtn');
+  const slipsContainer = document.getElementById('slipsContainer');
+
+  if (bulkGenerateBtn) {
+    bulkGenerateBtn.addEventListener('click', async () => {
+      const input = prompt('How many new participant teams would you like to generate?', '10');
+      if (!input) return;
+      const count = parseInt(input, 10);
+      if (isNaN(count) || count <= 0) {
+        alert('Please enter a valid positive number.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin/teams/bulk-generate', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ count })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to bulk generate teams.');
+
+        alert(`✓ Generated ${data.createdCount} new participant teams with mixed passwords!`);
+        fetchTeamsList();
+        fetchOverview();
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    });
+  }
+
+  if (printSlipsBtn) {
+    printSlipsBtn.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/admin/teams-list', { headers: adminHeaders() });
+        const data = await res.json();
+        renderSlipsCards(data.teams || []);
+        slipsModal.classList.remove('hidden');
+      } catch (e) {
+        alert('Error fetching teams: ' + e.message);
+      }
+    });
+  }
+
+  if (closeSlipsBtn) {
+    closeSlipsBtn.addEventListener('click', () => {
+      slipsModal.classList.add('hidden');
+    });
+  }
+
+  function renderSlipsCards(teams) {
+    slipsContainer.innerHTML = '';
+    const loginUrl = window.location.origin;
+    teams.forEach(t => {
+      const card = document.createElement('div');
+      card.style.background = 'var(--dusk)';
+      card.style.border = '1px dashed var(--horizon-4)';
+      card.style.borderRadius = '10px';
+      card.style.padding = '14px';
+      card.style.fontFamily = 'var(--sans)';
+      card.innerHTML = `
+        <div style="font-size:11px; font-weight:700; color:var(--horizon-4); text-transform:uppercase; letter-spacing:.08em;">Digital Horizon · Participant Login</div>
+        <div style="font-size:16px; font-weight:800; color:#fff; margin:6px 0;">${t.name}</div>
+        <div style="font-family:var(--mono); font-size:13px; margin-bottom:4px;"><b>Team ID:</b> <span style="color:var(--ok); font-weight:700;">${t.id}</span></div>
+        <div style="font-family:var(--mono); font-size:13px; margin-bottom:8px;"><b>Password:</b> <span style="color:#c9b7ff; font-weight:700;">${t.password}</span></div>
+        <div style="font-size:11px; color:var(--text-dim); font-family:var(--mono);">URL: ${loginUrl}</div>
+      `;
+      slipsContainer.appendChild(card);
+    });
+  }
+
   // PARTICIPANT CREDENTIALS MANAGER MODAL
   manageTeamsBtn.addEventListener('click', () => {
     teamsModal.classList.remove('hidden');

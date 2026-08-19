@@ -100,19 +100,21 @@
   <!-- PARTICIPANT CREDENTIALS MANAGER MODAL -->
   <div id="teamsModal" class="modal-overlay hidden">
     <div class="modal modal-lg">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
         <h3>👥 Participant & Password Management</h3>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button id="bulkGenerateBtn" class="btn" style="padding: 4px 10px; font-size: 12px;">⚡ Bulk Add Teams</button>
           <button id="randomizeAllPassBtn" class="btn" style="padding: 4px 10px; font-size: 12px;" title="Generate mixed passwords for all teams">🔀 Mix All Passwords</button>
-          <button id="exportCredentialsBtn" class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">📄 Export Sheet</button>
+          <button id="printSlipsBtn" class="btn" style="padding: 4px 10px; font-size: 12px;">🖨️ Printable Slips</button>
+          <button id="exportCredentialsBtn" class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">📄 Export CSV</button>
           <button id="closeTeamsBtn" class="btn" style="padding: 4px 10px;">✕ Close</button>
         </div>
       </div>
-      <p style="color: var(--text-dim); font-size: 13px; margin-bottom: 16px;">Create new participant teams, generate secure mixed passwords, or export credential sheets.</p>
+      <p style="color: var(--text-dim); font-size: 13px; margin-bottom: 16px;">Create participant teams ahead of time, generate mixed passwords, and print or export login cards for your event.</p>
 
       <!-- Add New Team Form -->
       <div style="background: var(--dusk); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
-        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--horizon-4);">+ Add New Participant Team</h4>
+        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--horizon-4);">+ Add Single Participant Team</h4>
         <form id="createTeamForm" class="form-row">
           <input id="newTeamId" class="form-input mono" type="text" placeholder="Team ID (e.g. TEAM036)" required>
           <input id="newTeamName" class="form-input" type="text" placeholder="Team Name (e.g. Team Alpha 36)" required>
@@ -140,6 +142,24 @@
             <!-- Dynamically populated -->
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRINTABLE LOGIN SLIPS MODAL -->
+  <div id="slipsModal" class="modal-overlay hidden">
+    <div class="modal modal-lg" style="max-width: 860px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3>🖨️ Printable Participant Login Slips</h3>
+        <div>
+          <button onclick="window.print()" class="btn btn-primary" style="padding: 4px 12px;">🖨️ Print Slips</button>
+          <button id="closeSlipsBtn" class="btn" style="padding: 4px 10px;">✕ Close</button>
+        </div>
+      </div>
+      <p style="color: var(--text-dim); font-size: 13px; margin-bottom: 16px;">Cut out these login cards to distribute to team laptops before the event.</p>
+
+      <div id="slipsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; max-height: 480px; overflow-y: auto; padding: 4px;">
+        <!-- Dynamically populated cards -->
       </div>
     </div>
   </div>
