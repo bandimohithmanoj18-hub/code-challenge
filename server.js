@@ -488,7 +488,7 @@ app.post('/api/quiz/violation', authTeam, (req, res) => {
 // Admin Login
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '190807@1987Mm';
 
   if (password !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Invalid admin password.' });
