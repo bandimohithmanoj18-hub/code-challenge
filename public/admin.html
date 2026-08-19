@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Horizon — Organizer Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- ADMIN AUTH MODAL -->
+  <div id="authModal" class="modal-overlay">
+    <div class="modal">
+      <h3>Organizer Admin Authentication</h3>
+      <p style="color: var(--text-dim); font-size: 13px; margin-bottom: 16px;">Enter the organizer password to access the control panel.</p>
+      <input id="adminPassInput" type="password" placeholder="Password (default: admin123)" style="width: 100%; padding: 12px; background: var(--void); border: 1px solid var(--line); color: var(--text); border-radius: 8px; font-family: var(--mono); margin-bottom: 16px; outline: none;">
+      <div id="authError" style="color: var(--bad); font-size: 13px; margin-bottom: 12px;" class="hidden"></div>
+      <button id="adminLoginBtn" class="btn btn-primary" style="width: 100%;">Authenticate & Access Dashboard →</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD CONTENT -->
+  <div id="dashboardContent" class="hidden">
+    <header>
+      <div>
+        <h1>Digital Horizon — Level 1 Control Panel</h1>
+        <p style="color: var(--text-dim); font-size: 13px; margin-top: 4px;">Live Team Monitoring, Audit Trails & Quiz Controls</p>
+      </div>
+      <div>
+        <span id="quizStateBadge" class="badge state-NOT_STARTED">NOT STARTED</span>
+      </div>
+    </header>
+
+    <div class="controls-bar">
+      <span style="font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin-right: 8px;">Quiz Controls:</span>
+      <button id="startQuizBtn" class="btn btn-success">▶ Start / Resume Quiz</button>
+      <button id="pauseQuizBtn" class="btn">⏸ Pause Quiz</button>
+      <button id="endQuizBtn" class="btn btn-danger">⏹ End Quiz</button>
+      <div style="flex: 1;"></div>
+      <button id="manageTeamsBtn" class="btn">👥 Manage Participants</button>
+      <button id="viewArchivesBtn" class="btn">📜 Past Archives</button>
+      <button id="exportCsvBtn" class="btn btn-primary">📥 Export CSV</button>
+      <button id="clearDataBtn" class="btn btn-danger" title="Clear current session and save to archives">🗑 Clear & Archive Data</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="val" id="statTotal">0</div>
+        <div class="lbl">Total Teams</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="statActive" style="color: var(--ok);">0</div>
+        <div class="lbl">Active / Playing</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="statSubmitted" style="color: #c9b7ff;">0</div>
+        <div class="lbl">Submitted</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="statDisqualified" style="color: var(--bad);">0</div>
+        <div class="lbl">Disqualified</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Team ID</th>
+            <th>Team Name</th>
+            <th>Status</th>
+            <th>Question</th>
+            <th>Score</th>
+            <th>Strikes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="teamsTableBody">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AUDIT LOG MODAL -->
+  <div id="auditModal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 620px;">
+      <h3 id="auditTeamTitle">Team Audit Log</h3>
+      <div id="auditLogsContent" style="max-height: 300px; overflow-y: auto; background: var(--void); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-bottom: 16px; font-family: var(--mono); font-size: 12.5px;">
+        <!-- Log entries -->
+      </div>
+      <button id="closeAuditBtn" class="btn" style="width: 100%;">Close Audit View</button>
+    </div>
+  </div>
+
+  <!-- PARTICIPANT CREDENTIALS MANAGER MODAL -->
+  <div id="teamsModal" class="modal-overlay hidden">
+    <div class="modal modal-lg">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3>👥 Participant & Password Management</h3>
+        <div style="display: flex; gap: 8px;">
+          <button id="randomizeAllPassBtn" class="btn" style="padding: 4px 10px; font-size: 12px;" title="Generate mixed passwords for all teams">🔀 Mix All Passwords</button>
+          <button id="exportCredentialsBtn" class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">📄 Export Sheet</button>
+          <button id="closeTeamsBtn" class="btn" style="padding: 4px 10px;">✕ Close</button>
+        </div>
+      </div>
+      <p style="color: var(--text-dim); font-size: 13px; margin-bottom: 16px;">Create new participant teams, generate secure mixed passwords, or export credential sheets.</p>
+
+      <!-- Add New Team Form -->
+      <div style="background: var(--dusk); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--horizon-4);">+ Add New Participant Team</h4>
+        <form id="createTeamForm" class="form-row">
+          <input id="newTeamId" class="form-input mono" type="text" placeholder="Team ID (e.g. TEAM036)" required>
+          <input id="newTeamName" class="form-input" type="text" placeholder="Team Name (e.g. Team Alpha 36)" required>
+          <div style="display: flex; gap: 6px; flex: 1; min-width: 200px;">
+            <input id="newTeamPassword" class="form-input mono" type="text" placeholder="Password" required>
+            <button type="button" id="genPasswordBtn" class="btn" style="padding: 8px 10px; font-size: 11px; white-space: nowrap;" title="Generate mixed password">⚡ Mixed</button>
+          </div>
+          <button type="submit" class="btn btn-success">+ Add Participant</button>
+        </form>
+        <div id="createTeamMsg" style="font-size: 12px; margin-top: 6px;" class="hidden"></div>
+      </div>
+
+      <!-- Teams List Table -->
+      <div class="table-wrap" style="max-height: 360px; overflow-y: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Team ID</th>
+              <th>Team Name</th>
+              <th>Password</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="manageTeamsTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAST SESSION ARCHIVES MODAL -->
+  <div id="archivesModal" class="modal-overlay hidden">
+    <div class="modal modal-lg">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3>📜 Past Session History & Archives</h3>
+        <button id="closeArchivesBtn" class="btn" style="padding: 4px 10px;">✕ Close</button>
+      </div>
+      <p style="color: var(--text-dim); font-size: 13px; margin-bottom: 16px;">Browse saved session backups automatically archived when clearing previous session data.</p>
+
+      <div class="table-wrap" style="max-height: 400px; overflow-y: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Archive File</th>
+              <th>Archived At</th>
+              <th>Teams</th>
+              <th>Submitted / DQ</th>
+              <th>Top Scorer</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="archivesTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+:root {
+  --void: #080b14;
+  --dusk: #12172a;
+  --panel: #161c33;
+  --line: #252d4a;
+  --horizon-2: #7b3fa0;
+  --horizon-3: #ff7a45;
+  --horizon-4: #ffb347;
+  --text: #e8ebf5;
+  --text-dim: #8b93b5;
+  --ok: #4ee6a0;
+  --bad: #ff5c7a;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  padding: 24px;
+}
+
+header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 20px; border-bottom: 1px solid var(--line); margin-bottom: 24px;
+}
+header h1 { font-size: 22px; font-weight: 800; }
+header .badge {
+  font-family: var(--mono); font-size: 12px; padding: 6px 12px; border-radius: 20px; text-transform: uppercase; font-weight: 700;
+}
+.state-NOT_STARTED { background: rgba(139,147,181,0.2); color: var(--text-dim); }
+.state-IN_PROGRESS { background: rgba(78,230,160,0.2); color: var(--ok); }
+.state-PAUSED { background: rgba(255,179,71,0.2); color: var(--horizon-4); }
+.state-ENDED { background: rgba(255,92,122,0.2); color: var(--bad); }
+
+.controls-bar {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 24px;
+  background: var(--dusk); border: 1px solid var(--line); border-radius: 12px; padding: 16px;
+}
+
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; text-align: center;
+}
+.stat-card .val { font-family: var(--mono); font-size: 28px; font-weight: 800; color: #fff; }
+.stat-card .lbl { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
+
+btn, button.btn {
+  padding: 9px 16px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel);
+  color: var(--text); font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+button.btn:hover { border-color: var(--horizon-3); background: var(--dusk); }
+button.btn-primary { background: linear-gradient(90deg, var(--horizon-2), var(--horizon-3)); color: #000; border: none; font-weight: 700; }
+button.btn-danger { background: rgba(255,92,122,0.2); color: var(--bad); border-color: var(--bad); }
+button.btn-success { background: rgba(78,230,160,0.2); color: var(--ok); border-color: var(--ok); }
+
+.table-wrap {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th, td { padding: 14px 16px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); background: var(--dusk); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+.status-tag {
+  font-family: var(--mono); font-size: 10.5px; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; font-weight: 700;
+}
+.status-NOT_STARTED { background: rgba(139,147,181,0.15); color: var(--text-dim); }
+.status-ACTIVE { background: rgba(78,230,160,0.15); color: var(--ok); }
+.status-WARNING { background: rgba(255,179,71,0.2); color: var(--horizon-4); }
+.status-SUBMITTED { background: rgba(58,28,113,0.3); color: #c9b7ff; }
+.status-DISQUALIFIED { background: rgba(255,92,122,0.2); color: var(--bad); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px;
+}
+.modal {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px; width: 100%; max-width: 540px; padding: 24px; max-height: 90vh; overflow-y: auto;
+}
+.modal.modal-lg { max-width: 780px; }
+.modal h3 { font-size: 18px; margin-bottom: 14px; }
+.hidden { display: none !important; }
+
+.form-row {
+  display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.form-input {
+  flex: 1; min-width: 130px; padding: 10px 12px; background: var(--void); border: 1px solid var(--line);
+  color: var(--text); border-radius: 8px; font-family: var(--sans); font-size: 13px; outline: none;
+}
+.form-input:focus { border-color: var(--horizon-3); }
+.form-input.mono { font-family: var(--mono); }
+

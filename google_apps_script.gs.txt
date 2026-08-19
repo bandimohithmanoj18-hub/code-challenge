@@ -1,0 +1,56 @@
+/**
+ * DIGITAL HORIZON — CODE CHALLENGE
+ * Paste this into Extensions > Apps Script on your Google Sheet, then deploy
+ * as a Web App. Full steps are in SETUP_INSTRUCTIONS.md.
+ */
+
+function doPost(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Results')
+    || SpreadsheetApp.getActiveSpreadsheet().insertSheet('Results');
+
+  // Add header row once
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow([
+      'Timestamp (received)', 'Name', 'Team / Roll No.',
+      'Marks Scored', 'Marks Possible',
+      'Easy Correct', 'Medium Correct', 'Hard Correct',
+      'Answered', 'Unanswered',
+      'Terminated?', 'Violation Count',
+      'Started At', 'Finished At',
+      'Violations (JSON)', 'Answers (JSON)'
+    ]);
+  }
+
+  let data = {};
+  try {
+    data = JSON.parse(e.postData.contents);
+  } catch (err) {
+    data = e.parameter || {};
+  }
+
+  sheet.appendRow([
+    new Date(),
+    data.name || '',
+    data.team || '',
+    data.scoreMarks,
+    data.totalPossible,
+    data.easyCorrect || '',
+    data.mediumCorrect || '',
+    data.hardCorrect || '',
+    data.questionsAnswered,
+    data.questionsUnanswered,
+    data.terminated ? 'YES' : 'No',
+    data.violationCount || 0,
+    data.startedAt || '',
+    data.finishedAt || '',
+    data.violations || '',
+    data.answers || ''
+  ]);
+
+  return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput('Digital Horizon quiz logger is live.');
+}

@@ -1,0 +1,15 @@
+{
+  "name": "digital-horizon-quiz-level1",
+  "version": "1.0.0",
+  "description": "Level 1 Python MCQ Quiz Application with Server-Side Timing, Anti-Cheat, and Live Admin Dashboard",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}

@@ -1,0 +1,232 @@
+[
+  {
+    "id": 1,
+    "difficulty": "easy",
+    "title": "List Indexing",
+    "code": "a = [10, 20, 30, 40, 50]\nprint(a[1] + a[-1])",
+    "options": ["60", "70", "80", "90"],
+    "correct": "70",
+    "timeSeconds": 30,
+    "marks": 1
+  },
+  {
+    "id": 2,
+    "difficulty": "easy",
+    "title": "String Slicing",
+    "code": "s = \"PYTHON\"\nprint(s[1:5])",
+    "options": ["PYTH", "YTHO", "YTHON", "YTH"],
+    "correct": "YTHO",
+    "timeSeconds": 30,
+    "marks": 1
+  },
+  {
+    "id": 3,
+    "difficulty": "easy",
+    "title": "Boolean Value",
+    "code": "x = []\nif x:\n    print(\"Yes\")\nelse:\n    print(\"No\")",
+    "options": ["Yes", "No", "[]", "Error"],
+    "correct": "No",
+    "timeSeconds": 30,
+    "marks": 1
+  },
+  {
+    "id": 4,
+    "difficulty": "easy",
+    "title": "Loop",
+    "code": "total = 0\nfor i in range(1, 5):\n    total += i\nprint(total)",
+    "options": ["9", "10", "11", "15"],
+    "correct": "10",
+    "timeSeconds": 30,
+    "marks": 1
+  },
+  {
+    "id": 5,
+    "difficulty": "easy",
+    "title": "List Modification",
+    "code": "a = [1, 2, 3]\na.append(4)\na.remove(2)\nprint(a)",
+    "options": ["[1, 2, 3, 4]", "[1, 3, 4]", "[1, 3]", "[2, 3, 4]"],
+    "correct": "[1, 3, 4]",
+    "timeSeconds": 30,
+    "marks": 1
+  },
+  {
+    "id": 6,
+    "difficulty": "medium",
+    "title": "Aliasing",
+    "code": "a = [1, 2, 3]\nb = a\nb[0] = 100\nprint(a)",
+    "options": ["[1, 2, 3]", "[100, 2, 3]", "[100]", "Error"],
+    "correct": "[100, 2, 3]",
+    "timeSeconds": 90,
+    "marks": 2
+  },
+  {
+    "id": 7,
+    "difficulty": "medium",
+    "title": "Copy vs Reference",
+    "code": "a = [1, 2, 3]\nb = a[:]\nb[0] = 100\nprint(a)\nprint(b)",
+    "options": [
+      "[100, 2, 3]\n[100, 2, 3]",
+      "[1, 2, 3]\n[100, 2, 3]",
+      "[100, 2, 3]\n[1, 2, 3]",
+      "[1, 2, 3]\n[1, 2, 3]"
+    ],
+    "correct": "[1, 2, 3]\n[100, 2, 3]",
+    "timeSeconds": 90,
+    "marks": 2
+  },
+  {
+    "id": 8,
+    "difficulty": "medium",
+    "title": "Dictionary Update",
+    "code": "d = {\"a\": 1, \"b\": 2}\nd[\"a\"] += 5\nd[\"c\"] = d[\"b\"] + 3\nprint(d)",
+    "options": [
+      "{'a': 1, 'b': 2, 'c': 5}",
+      "{'a': 6, 'b': 2, 'c': 5}",
+      "{'a': 6, 'b': 5, 'c': 3}",
+      "Error"
+    ],
+    "correct": "{'a': 6, 'b': 2, 'c': 5}",
+    "timeSeconds": 90,
+    "marks": 2
+  },
+  {
+    "id": 9,
+    "difficulty": "medium",
+    "title": "Set Behaviour",
+    "code": "a = {1, 2, 2, 3, 3, 3}\nprint(len(a))",
+    "options": ["6", "5", "3", "1"],
+    "correct": "3",
+    "timeSeconds": 90,
+    "marks": 2
+  },
+  {
+    "id": 10,
+    "difficulty": "medium",
+    "title": "for...else",
+    "code": "for i in range(3):\n    print(i)\nelse:\n    print(\"Done\")",
+    "options": [
+      "0\n1\n2",
+      "Done",
+      "0\n1\n2\nDone",
+      "Error"
+    ],
+    "correct": "0\n1\n2\nDone",
+    "timeSeconds": 90,
+    "marks": 2
+  },
+  {
+    "id": 11,
+    "difficulty": "medium",
+    "title": "break and else",
+    "code": "for i in range(5):\n    if i == 2:\n        break\nelse:\n    print(\"Done\")\nprint(i)",
+    "options": ["Done then 2", "2", "0", "Error"],
+    "correct": "2",
+    "timeSeconds": 90,
+    "marks": 2
+  },
+  {
+    "id": 12,
+    "difficulty": "medium",
+    "title": "Function Return",
+    "code": "def test(x):\n    x += 5\n    return x * 2\na = test(3)\nprint(a)",
+    "options": ["8", "10", "16", "11"],
+    "correct": "16",
+    "timeSeconds": 90,
+    "marks": 2
+  },
+  {
+    "id": 13,
+    "difficulty": "medium",
+    "title": "Mutable Default Argument",
+    "code": "def add(x=[]):\n    x.append(1)\n    return x\nprint(add())\nprint(add())",
+    "options": [
+      "[1]\n[1]",
+      "[1]\n[1, 1]",
+      "[]\n[]",
+      "Error"
+    ],
+    "correct": "[1]\n[1, 1]",
+    "timeSeconds": 90,
+    "marks": 2
+  },
+  {
+    "id": 14,
+    "difficulty": "medium",
+    "title": "Boolean Short-Circuit",
+    "code": "x = 0\nif x and (10 / x):\n    print(\"A\")\nelse:\n    print(\"B\")",
+    "options": ["A", "B", "ZeroDivisionError", "Nothing"],
+    "correct": "B",
+    "timeSeconds": 90,
+    "marks": 2
+  },
+  {
+    "id": 15,
+    "difficulty": "medium",
+    "title": "Nested List Reference",
+    "code": "a = [[0] * 2] * 3\na[0][0] = 1\nprint(a)",
+    "options": [
+      "[[1, 0], [0, 0], [0, 0]]",
+      "[[1, 0], [1, 0], [1, 0]]",
+      "[[0, 0], [0, 0], [0, 0]]",
+      "Error"
+    ],
+    "correct": "[[1, 0], [1, 0], [1, 0]]",
+    "timeSeconds": 90,
+    "marks": 2
+  },
+  {
+    "id": 16,
+    "difficulty": "hard",
+    "title": "Dictionary Key Trick",
+    "code": "d = {1: \"A\", True: \"B\", 1.0: \"C\"}\nprint(len(d))\nprint(d[1])",
+    "options": [
+      "3\nA",
+      "1\nC",
+      "2\nC",
+      "1\nA"
+    ],
+    "correct": "1\nC",
+    "timeSeconds": 120,
+    "marks": 4
+  },
+  {
+    "id": 17,
+    "difficulty": "hard",
+    "title": "Closure Trap",
+    "code": "x = 10\ndef outer():\n    x = 20\n    def inner():\n        print(x)\n    x = 30\n    inner()\nouter()",
+    "options": ["10", "20", "30", "Error"],
+    "correct": "30",
+    "timeSeconds": 120,
+    "marks": 4
+  },
+  {
+    "id": 18,
+    "difficulty": "hard",
+    "title": "finally Overrides return",
+    "code": "def test():\n    try:\n        return 10\n    finally:\n        return 20\nprint(test())",
+    "options": ["10", "20", "None", "Error"],
+    "correct": "20",
+    "timeSeconds": 120,
+    "marks": 4
+  },
+  {
+    "id": 19,
+    "difficulty": "hard",
+    "title": "List Comprehension",
+    "code": "x = [1, 2, 3, 4]\nresult = [i * 2 for i in x if i % 2 == 0]\nprint(result)",
+    "options": ["[2, 4, 6, 8]", "[4, 8]", "[2, 6]", "[1, 3]"],
+    "correct": "[4, 8]",
+    "timeSeconds": 120,
+    "marks": 4
+  },
+  {
+    "id": 20,
+    "difficulty": "hard",
+    "title": "Evaluation Order",
+    "code": "x = [1, 2, 3]\nprint(x.pop() + x.pop(0) + x[0])",
+    "options": ["5", "6", "7", "8"],
+    "correct": "6",
+    "timeSeconds": 120,
+    "marks": 4
+  }
+]

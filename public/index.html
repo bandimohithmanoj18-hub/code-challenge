@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Digital Horizon — Level 1 Code Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/quiz.css">
+</head>
+<body>
+<div class="horizon-line"></div>
+<div class="wrap">
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen">
+    <div class="brand"><span class="dot"></span><span>Digital Horizon · Level 1</span></div>
+    <h1 class="title">Python Code Challenge</h1>
+    <p class="subtitle">20 Questions · Easy → Medium → Hard · Server Paced & Timed</p>
+
+    <div class="card">
+      <div id="loginError" class="error-banner hidden"></div>
+      <div class="field">
+        <label for="teamId">Team ID</label>
+        <input id="teamId" type="text" placeholder="e.g. TEAM001" autocomplete="off" style="text-transform: uppercase;">
+      </div>
+      <div class="field">
+        <label for="teamPassword">Password</label>
+        <input id="teamPassword" type="password" placeholder="••••••••" autocomplete="off">
+      </div>
+
+      <button class="primary" id="loginBtn">Team Login →</button>
+
+      <ul class="rules" style="margin-top: 24px;">
+        <li><span class="icon">▲</span><span><b>1 Team Account per Laptop:</b> Login credentials are unique per team. Concurrent logins on multiple devices are blocked.</span></li>
+        <li><span class="icon">▲</span><span><b>Fullscreen & Proctoring Enforced:</b> Starting the quiz enters fullscreen. Exiting fullscreen or switching tabs triggers warnings and violation strikes.</span></li>
+        <li><span class="icon">▲</span><span><b>3-Strike Disqualification:</b> On the 3rd violation, the exam terminates immediately and results are submitted as-is.</span></li>
+        <li><span class="icon">▲</span><span><b>Server-Enforced Timing:</b> Easy (30s / 1 mark) · Medium (90s / 2 marks) · Hard (120s / 4 marks). Total: 45 Marks.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- LOBBY / WAITING SCREEN -->
+  <div id="lobbyScreen" class="hidden">
+    <div class="brand"><span class="dot"></span><span>Digital Horizon · Level 1</span></div>
+    <h1 class="title" id="lobbyTeamName">Welcome, Team</h1>
+    <p class="subtitle" id="lobbyStatusMsg">Waiting for the organizer to start the challenge...</p>
+    <div class="card" style="text-align: center;">
+      <div style="font-size: 42px; margin-bottom: 12px;">⏳</div>
+      <p style="color: var(--text-dim); font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+        Please stay on this page. Once the organizer starts the quiz, click the button below to enter fullscreen and begin.
+      </p>
+      <button class="primary" id="startQuizBtn" disabled>Enter Fullscreen & Begin Challenge →</button>
+    </div>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quizScreen" class="hidden">
+    <div class="topbar">
+      <span class="qcount" id="qcount">Question 1 / 20</span>
+      <span class="strikecount" id="strikeCount">Strikes: 0 / 3</span>
+      <span class="diffbadge diff-easy" id="diffbadge">EASY</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="timerwrap">
+      <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+      <div class="timer-num" id="timerNum">30s</div>
+    </div>
+    <div class="qcard">
+      <div class="qtitle" id="qtitle">—</div>
+      <pre class="code" id="qcode"></pre>
+      <div class="options" id="options"></div>
+      <div class="nextrow">
+        <button class="primary" id="submitAnswerBtn" style="max-width: 260px; margin-top: 14px;">Lock & Submit Answer →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="resultScreen" class="hidden">
+    <div class="brand"><span class="dot"></span><span>Digital Horizon · Level 1</span></div>
+    <h1 class="title" id="resultTitle">Challenge Complete</h1>
+    <div class="card" style="max-width: 520px; text-align: center;">
+      <div class="scorebig" id="scoreBig">0 / 45</div>
+      <div class="scorelabel">Server Verified Score</div>
+      <p id="resultMsg" style="color: var(--text-dim); font-size: 14px; margin-top: 16px; line-height: 1.6;">
+        Your submission has been recorded on the server.
+      </p>
+    </div>
+  </div>
+
+  <!-- LOCKDOWN OVERLAY -->
+  <div id="lockdown" class="hidden">
+    <div class="violation-tag" id="violationTag">VIOLATION LOGGED</div>
+    <h2 id="lockdownTitle">Security Warning</h2>
+    <p id="lockdownMsg">You left fullscreen or switched applications. Return to fullscreen to resume.</p>
+    <button class="primary" style="max-width: 280px;" id="resumeBtn">Return to Fullscreen</button>
+  </div>
+
+</div>
+
+<script src="js/quiz.js"></script>
+</body>
+</html>

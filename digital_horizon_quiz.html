@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Digital Horizon — Code Challenge Level 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#080b14;
+    --dusk:#12172a;
+    --panel:#161c33;
+    --line:#252d4a;
+    --horizon-1:#3a1c71;
+    --horizon-2:#7b3fa0;
+    --horizon-3:#ff7a45;
+    --horizon-4:#ffb347;
+    --text:#e8ebf5;
+    --text-dim:#8b93b5;
+    --ok:#4ee6a0;
+    --bad:#ff5c7a;
+    --mono:'JetBrains Mono', monospace;
+    --sans:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background: radial-gradient(ellipse at 50% -10%, #1a1440 0%, var(--void) 55%);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+    -webkit-user-select:none; user-select:none;
+  }
+  /* horizon glow fixed backdrop */
+  body::after{
+    content:'';
+    position:fixed; left:0; right:0; bottom:0; height:38vh;
+    background:linear-gradient(180deg, rgba(122,63,160,0) 0%, rgba(122,63,160,0.10) 35%, rgba(255,122,69,0.14) 75%, rgba(255,179,71,0.10) 100%);
+    pointer-events:none; z-index:0;
+  }
+  .horizon-line{
+    position:fixed; left:0; right:0; bottom:0; height:1px; z-index:0; pointer-events:none;
+    background:linear-gradient(90deg, transparent, var(--horizon-3), transparent);
+    box-shadow:0 0 24px 2px rgba(255,122,69,0.35);
+  }
+  .wrap{position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:32px 20px 80px;}
+  .brand{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--horizon-3); box-shadow:0 0 10px var(--horizon-3);}
+  .brand span{font-family:var(--mono); letter-spacing:.18em; font-size:12px; color:var(--text-dim); text-transform:uppercase;}
+  h1.title{
+    font-family:var(--sans); font-weight:800; font-size:clamp(24px,4vw,38px);
+    background:linear-gradient(90deg,#fff, #c9b7ff 55%, var(--horizon-4));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    margin-top:8px; text-align:center;
+  }
+  .subtitle{color:var(--text-dim); font-size:14px; margin-top:6px; text-align:center; max-width:520px;}
+  .card{
+    background:linear-gradient(180deg, var(--panel), var(--dusk));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:28px;
+    width:100%; max-width:640px;
+    margin-top:28px;
+    box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);
+  }
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:12px; color:var(--text-dim); font-family:var(--mono); text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px;}
+  .field input{
+    width:100%; background:var(--void); border:1px solid var(--line); border-radius:8px;
+    padding:12px 14px; color:var(--text); font-family:var(--sans); font-size:15px;
+    outline:none; transition:border-color .15s;
+  }
+  .field input:focus{border-color:var(--horizon-3);}
+  .rules{list-style:none; margin:18px 0; padding:0;}
+  .rules li{
+    display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color:var(--text-dim);
+    padding:9px 0; border-top:1px solid var(--line);
+  }
+  .rules li:first-child{border-top:none;}
+  .rules li b{color:var(--text); font-weight:600;}
+  .rules .icon{font-family:var(--mono); color:var(--horizon-3); font-size:13px; flex-shrink:0; margin-top:1px;}
+  .note{
+    font-size:12px; color:var(--text-dim); background:rgba(255,122,69,0.06);
+    border:1px solid rgba(255,122,69,0.2); border-radius:8px; padding:10px 12px; margin-top:14px; line-height:1.5;
+  }
+  button.primary{
+    width:100%; margin-top:20px; padding:14px 20px; border:none; border-radius:9px;
+    background:linear-gradient(90deg, var(--horizon-2), var(--horizon-3));
+    color:#0a0a12; font-weight:700; font-size:15px; cursor:pointer;
+    font-family:var(--sans); letter-spacing:.01em;
+    transition:transform .12s, box-shadow .12s;
+  }
+  button.primary:hover{transform:translateY(-1px); box-shadow:0 10px 30px -10px rgba(255,122,69,0.5);}
+  button.primary:disabled{opacity:.4; cursor:not-allowed; transform:none; box-shadow:none;}
+  button.secondary{
+    padding:10px 16px; border-radius:8px; border:1px solid var(--line); background:transparent;
+    color:var(--text); font-family:var(--sans); font-size:13px; cursor:pointer;
+  }
+  .hidden{display:none !important;}
+
+  /* QUIZ SCREEN */
+  #quizScreen{width:100%; max-width:760px;}
+  .topbar{display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:14px;}
+  .qcount{font-family:var(--mono); font-size:12px; color:var(--text-dim);}
+  .diffbadge{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; padding:4px 9px; border-radius:20px; text-transform:uppercase; font-weight:700;}
+  .diff-easy{background:rgba(78,230,160,0.12); color:var(--ok);}
+  .diff-medium{background:rgba(255,179,71,0.14); color:var(--horizon-4);}
+  .diff-hard{background:rgba(255,92,122,0.14); color:var(--bad);}
+  .strikecount{font-family:var(--mono); font-size:11.5px; color:var(--bad); letter-spacing:.05em;}
+
+  .progress-track{width:100%; height:4px; background:var(--line); border-radius:4px; overflow:hidden; margin-bottom:20px;}
+  .progress-fill{height:100%; background:linear-gradient(90deg,var(--horizon-2),var(--horizon-3),var(--horizon-4)); width:0%; transition:width .3s;}
+
+  .timerwrap{display:flex; align-items:center; gap:10px; margin-bottom:18px;}
+  .timer-track{flex:1; height:8px; background:var(--void); border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .timer-fill{height:100%; width:100%; background:linear-gradient(90deg,var(--ok),var(--horizon-4)); transition:width 1s linear, background .3s;}
+  .timer-num{font-family:var(--mono); font-size:13px; color:var(--text-dim); width:34px; text-align:right;}
+
+  .qcard{background:linear-gradient(180deg, var(--panel), var(--dusk)); border:1px solid var(--line); border-radius:14px; padding:26px;}
+  .qtitle{font-size:16px; font-weight:700; margin-bottom:14px;}
+  pre.code{
+    font-family:var(--mono); font-size:13.5px; line-height:1.6; background:var(--void);
+    border:1px solid var(--line); border-left:3px solid var(--horizon-3);
+    border-radius:8px; padding:16px 18px; overflow-x:auto; margin-bottom:18px; color:#d9def0;
+  }
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    display:flex; align-items:center; gap:12px; padding:13px 16px; border:1px solid var(--line);
+    border-radius:9px; cursor:pointer; background:var(--void); transition:border-color .12s, background .12s;
+  }
+  .opt:hover{border-color:var(--horizon-3);}
+  .opt .key{font-family:var(--mono); font-weight:700; color:var(--horizon-4); width:18px;}
+  .opt .val{font-family:var(--mono); font-size:13.5px; white-space:pre; color:var(--text);}
+  .opt.selected{border-color:var(--horizon-3); background:rgba(255,122,69,0.08);}
+  .opt.correct{border-color:var(--ok); background:rgba(78,230,160,0.1);}
+  .opt.incorrect{border-color:var(--bad); background:rgba(255,92,122,0.1);}
+  .opt.disabled{pointer-events:none;}
+
+  .nextrow{display:flex; justify-content:flex-end; margin-top:18px;}
+
+  /* LOCKDOWN OVERLAY */
+  #lockdown{
+    position:fixed; inset:0; z-index:50; background:rgba(4,5,10,0.94);
+    display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:24px;
+  }
+  #lockdown h2{font-size:22px; margin-bottom:10px;}
+  #lockdown p{color:var(--text-dim); max-width:420px; margin-bottom:20px; font-size:14px; line-height:1.6;}
+  .violation-tag{font-family:var(--mono); font-size:12px; color:var(--bad); margin-bottom:14px;}
+
+  /* RESULT SCREEN */
+  #resultScreen .scorebig{font-family:var(--mono); font-weight:800; font-size:56px; text-align:center; margin:10px 0 4px;
+    background:linear-gradient(90deg,#fff,var(--horizon-4)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .scorelabel{text-align:center; color:var(--text-dim); font-size:13px; font-family:var(--mono); letter-spacing:.08em; text-transform:uppercase;}
+  .breakdown{display:flex; gap:10px; margin-top:22px;}
+  .bd-item{flex:1; text-align:center; padding:14px 8px; border:1px solid var(--line); border-radius:10px; background:var(--void);}
+  .bd-item .n{font-family:var(--mono); font-weight:700; font-size:20px;}
+  .bd-item .l{font-size:11px; color:var(--text-dim); margin-top:4px; text-transform:uppercase; letter-spacing:.06em;}
+  #submitStatus{margin-top:18px; font-size:13px; color:var(--text-dim); text-align:center;}
+
+  ::selection{background:transparent;}
+  @media (max-width:600px){ .card,.qcard{padding:18px;} .scorebig{font-size:44px;} }
+</style>
+</head>
+<body>
+<div class="horizon-line"></div>
+<div class="wrap">
+
+  <!-- START SCREEN -->
+  <div id="startScreen">
+    <div class="brand"><span class="dot"></span><span>Digital Horizon · Code Challenge</span></div>
+    <h1 class="title">Level 1 — Python Code MCQ</h1>
+    <p class="subtitle">20 questions · Easy → Medium → Hard · One try, one horizon to cross.</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="pname">Your name</label>
+        <input id="pname" type="text" placeholder="Full name" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="pteam">Team / Roll No. (optional)</label>
+        <input id="pteam" type="text" placeholder="e.g. Team Falcon or 21CS045" autocomplete="off">
+      </div>
+
+      <ul class="rules">
+        <li><span class="icon">▲</span><span><b>Fullscreen required.</b> Starting the quiz enters fullscreen mode. Exiting fullscreen counts as a violation.</span></li>
+        <li><span class="icon">▲</span><span><b>Copy, paste & right-click are disabled</b> for the duration of the quiz.</span></li>
+        <li><span class="icon">▲</span><span><b>3 violations and you're out.</b> Switching tabs, exiting fullscreen, or opening another app is logged. On the 3rd violation the exam ends immediately and your result is submitted as-is.</span></li>
+        <li><span class="icon">▲</span><span><b>Timing & marks:</b> Easy — 30s / 1 mark. Medium — 1 min / 2 marks. Hard — 1 min 30s / 3 marks. Time runs out → auto-advances to the next question with whatever you had selected (or unanswered).</span></li>
+        <li><span class="icon">▲</span><span>Correct answers are not shown during the quiz — you'll only see your final score.</span></li>
+        <li><span class="icon">▲</span><span>Questions and answer order are shuffled per participant.</span></li>
+      </ul>
+
+      <div class="note">
+        Honesty note: a browser cannot forcibly close other apps on your laptop — that's outside what any website is allowed to do. What this challenge <i>can</i> do is detect and log when you leave the tab, exit fullscreen, or try to copy/paste, count those as strikes, and terminate the exam after the 3rd.
+      </div>
+
+      <button class="primary" id="startBtn">Enter Fullscreen &amp; Begin Challenge →</button>
+    </div>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quizScreen" class="hidden">
+    <div class="topbar">
+      <span class="qcount" id="qcount">Question 1 / 20</span>
+      <span class="strikecount" id="strikeCount">Strikes: 0 / 3</span>
+      <span class="diffbadge diff-easy" id="diffbadge">EASY</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="timerwrap">
+      <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+      <div class="timer-num" id="timerNum">30s</div>
+    </div>
+    <div class="qcard">
+      <div class="qtitle" id="qtitle">—</div>
+      <pre class="code" id="qcode"></pre>
+      <div class="options" id="options"></div>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="resultScreen" class="hidden">
+    <div class="brand"><span class="dot"></span><span>Digital Horizon · Code Challenge</span></div>
+    <h1 class="title" id="resultTitle">Challenge Complete</h1>
+    <div class="card" style="max-width:520px;">
+      <div class="scorebig" id="scoreBig">0 / 40</div>
+      <div class="scorelabel">Marks Scored</div>
+      <div class="breakdown">
+        <div class="bd-item"><div class="n" id="bdEasy" style="color:var(--ok)">0/5</div><div class="l">Easy</div></div>
+        <div class="bd-item"><div class="n" id="bdMedium" style="color:var(--horizon-4)">0/10</div><div class="l">Medium</div></div>
+        <div class="bd-item"><div class="n" id="bdHard" style="color:var(--bad)">0/5</div><div class="l">Hard</div></div>
+      </div>
+      <div id="submitStatus">Submitting your result…</div>
+    </div>
+  </div>
+
+  <!-- LOCKDOWN OVERLAY -->
+  <div id="lockdown" class="hidden">
+    <div class="violation-tag" id="violationTag">VIOLATION LOGGED</div>
+    <h2 id="lockdownTitle">You left fullscreen</h2>
+    <p id="lockdownMsg">Your countdown is paused. Return to fullscreen to continue the challenge. This event has been recorded and will appear in your submitted result.</p>
+    <button class="primary" style="max-width:280px;" id="resumeBtn">Return to Fullscreen</button>
+  </div>
+
+</div>
+
+<script>
+/* ============ CONFIG ============ */
+// Replace with your deployed Google Apps Script Web App URL (see SETUP_INSTRUCTIONS.md)
+const SHEET_WEBHOOK_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+const DIFFICULTY_CONFIG = {
+  easy:   { seconds: 30, marks: 1 },
+  medium: { seconds: 60, marks: 2 },
+  hard:   { seconds: 90, marks: 3 }
+};
+const MAX_VIOLATIONS = 3;
+
+/* ============ QUESTION BANK ============ */
+const RAW_QUESTIONS = [
+{ id:1, difficulty:'easy', title:'List Indexing',
+  code:`a = [10, 20, 30, 40, 50]\nprint(a[1] + a[-1])`,
+  options:[['A','60'],['B','70'],['C','80'],['D','90']], correct:'70' },
+{ id:2, difficulty:'easy', title:'String Slicing',
+  code:`s = "PYTHON"\nprint(s[1:5])`,
+  options:[['A','PYTH'],['B','YTHO'],['C','YTHON'],['D','YTH']], correct:'YTHO' },
+{ id:3, difficulty:'easy', title:'Boolean Value',
+  code:`x = []\nif x:\n    print("Yes")\nelse:\n    print("No")`,
+  options:[['A','Yes'],['B','No'],['C','[]'],['D','Error']], correct:'No' },
+{ id:4, difficulty:'easy', title:'Loop',
+  code:`total = 0\nfor i in range(1, 5):\n    total += i\nprint(total)`,
+  options:[['A','9'],['B','10'],['C','11'],['D','15']], correct:'10' },
+{ id:5, difficulty:'easy', title:'List Modification',
+  code:`a = [1, 2, 3]\na.append(4)\na.remove(2)\nprint(a)`,
+  options:[['A','[1, 2, 3, 4]'],['B','[1, 3, 4]'],['C','[1, 3]'],['D','[2, 3, 4]']], correct:'[1, 3, 4]' },
+
+{ id:6, difficulty:'medium', title:'Aliasing',
+  code:`a = [1, 2, 3]\nb = a\nb[0] = 100\nprint(a)`,
+  options:[['A','[1, 2, 3]'],['B','[100, 2, 3]'],['C','[100]'],['D','Error']], correct:'[100, 2, 3]' },
+{ id:7, difficulty:'medium', title:'Copy vs Reference',
+  code:`a = [1, 2, 3]\nb = a[:]\nb[0] = 100\nprint(a)\nprint(b)`,
+  options:[
+    ['A','[100, 2, 3]\n[100, 2, 3]'],
+    ['B','[1, 2, 3]\n[100, 2, 3]'],
+    ['C','[100, 2, 3]\n[1, 2, 3]'],
+    ['D','[1, 2, 3]\n[1, 2, 3]']
+  ], correct:'[1, 2, 3]\n[100, 2, 3]' },
+{ id:8, difficulty:'medium', title:'Dictionary Update',
+  code:`d = {"a": 1, "b": 2}\nd["a"] += 5\nd["c"] = d["b"] + 3\nprint(d)`,
+  options:[
+    ['A',"{'a': 1, 'b': 2, 'c': 5}"],
+    ['B',"{'a': 6, 'b': 2, 'c': 5}"],
+    ['C',"{'a': 6, 'b': 5, 'c': 3}"],
+    ['D','Error']
+  ], correct:"{'a': 6, 'b': 2, 'c': 5}" },
+{ id:9, difficulty:'medium', title:'Set Behaviour',
+  code:`a = {1, 2, 2, 3, 3, 3}\nprint(len(a))`,
+  options:[['A','6'],['B','5'],['C','3'],['D','1']], correct:'3' },
+{ id:10, difficulty:'medium', title:'for...else',
+  code:`for i in range(3):\n    print(i)\nelse:\n    print("Done")`,
+  options:[
+    ['A','0\n1\n2'],
+    ['B','Done'],
+    ['C','0\n1\n2\nDone'],
+    ['D','Error']
+  ], correct:'0\n1\n2\nDone' },
+{ id:11, difficulty:'medium', title:'break and else',
+  code:`for i in range(5):\n    if i == 2:\n        break\nelse:\n    print("Done")\nprint(i)`,
+  options:[['A','Done then 2'],['B','2'],['C','0'],['D','Error']], correct:'2' },
+{ id:12, difficulty:'medium', title:'Function Return',
+  code:`def test(x):\n    x += 5\n    return x * 2\na = test(3)\nprint(a)`,
+  options:[['A','8'],['B','10'],['C','16'],['D','11']], correct:'16' },
+{ id:13, difficulty:'medium', title:'Mutable Default Argument',
+  code:`def add(x=[]):\n    x.append(1)\n    return x\nprint(add())\nprint(add())`,
+  options:[
+    ['A','[1]\n[1]'],
+    ['B','[1]\n[1, 1]'],
+    ['C','[]\n[]'],
+    ['D','Error']
+  ], correct:'[1]\n[1, 1]' },
+{ id:14, difficulty:'medium', title:'Boolean Short-Circuit',
+  code:`x = 0\nif x and (10 / x):\n    print("A")\nelse:\n    print("B")`,
+  options:[['A','A'],['B','B'],['C','ZeroDivisionError'],['D','Nothing']], correct:'B' },
+{ id:15, difficulty:'medium', title:'Nested List Reference',
+  code:`a = [[0] * 2] * 3\na[0][0] = 1\nprint(a)`,
+  options:[
+    ['A','[[1, 0], [0, 0], [0, 0]]'],
+    ['B','[[1, 0], [1, 0], [1, 0]]'],
+    ['C','[[0, 0], [0, 0], [0, 0]]'],
+    ['D','Error']
+  ], correct:'[[1, 0], [1, 0], [1, 0]]' },
+
+{ id:16, difficulty:'hard', title:'Dictionary Key Trick',
+  code:`d = {1: "A", True: "B", 1.0: "C"}\nprint(len(d))\nprint(d[1])`,
+  options:[
+    ['A','3\nA'],
+    ['B','1\nC'],
+    ['C','2\nC'],
+    ['D','1\nA']
+  ], correct:'1\nC' },
+{ id:17, difficulty:'hard', title:'Closure Trap',
+  code:`x = 10\ndef outer():\n    x = 20\n    def inner():\n        print(x)\n    x = 30\n    inner()\nouter()`,
+  options:[['A','10'],['B','20'],['C','30'],['D','Error']], correct:'30' },
+{ id:18, difficulty:'hard', title:'finally Overrides return',
+  code:`def test():\n    try:\n        return 10\n    finally:\n        return 20\nprint(test())`,
+  options:[['A','10'],['B','20'],['C','None'],['D','Error']], correct:'20' },
+{ id:19, difficulty:'hard', title:'List Comprehension',
+  code:`x = [1, 2, 3, 4]\nresult = [i * 2 for i in x if i % 2 == 0]\nprint(result)`,
+  options:[['A','[2, 4, 6, 8]'],['B','[4, 8]'],['C','[2, 6]'],['D','[1, 3]']], correct:'[4, 8]' },
+{ id:20, difficulty:'hard', title:'Evaluation Order',
+  code:`x = [1, 2, 3]\nprint(x.pop() + x.pop(0) + x[0])`,
+  options:[['A','5'],['B','6'],['C','7'],['D','8']], correct:'6' },
+];
+
+/* ============ STATE ============ */
+let questions = [];
+let currentIndex = 0;
+let answers = [];
+let timerInterval = null;
+let timeLeft = 30;
+let quizActive = false;
+let violations = [];
+let lastViolationTime = 0;
+let terminated = false;
+let answeredCurrent = false;
+let selectedText = null;
+let startedAt = null;
+let participant = { name:'', team:'' };
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function buildQuestions(){
+  const shuffledQ = shuffle(RAW_QUESTIONS);
+  questions = shuffledQ.map(q => ({
+    ...q,
+    shuffledOptions: shuffle(q.options)
+  }));
+}
+
+/* ============ SCREENS ============ */
+const startScreen = document.getElementById('startScreen');
+const quizScreen = document.getElementById('quizScreen');
+const resultScreen = document.getElementById('resultScreen');
+const lockdown = document.getElementById('lockdown');
+
+function showScreen(el){
+  [startScreen, quizScreen, resultScreen].forEach(s => s.classList.add('hidden'));
+  el.classList.remove('hidden');
+}
+
+/* ============ FULLSCREEN ============ */
+function requestFS(){
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if(req) return req.call(el);
+  return Promise.resolve();
+}
+function isFullscreen(){
+  return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+}
+document.addEventListener('fullscreenchange', handleFSChange);
+document.addEventListener('webkitfullscreenchange', handleFSChange);
+function handleFSChange(){
+  if(!quizActive || terminated) return;
+  if(!isFullscreen()){
+    const overLimit = logViolation('fullscreen_exit');
+    if(overLimit) return; // terminateExam already took over the screen
+    pauseTimer();
+    document.getElementById('violationTag').textContent = `VIOLATION ${violations.length} / ${MAX_VIOLATIONS}`;
+    document.getElementById('lockdownTitle').textContent = 'You left fullscreen';
+    document.getElementById('lockdownMsg').textContent = `Your countdown is paused. Return to fullscreen to continue. ${MAX_VIOLATIONS - violations.length} strike(s) remaining before the exam ends automatically.`;
+    lockdown.classList.remove('hidden');
+  } else {
+    lockdown.classList.add('hidden');
+    if(quizActive && !terminated) resumeTimer();
+  }
+}
+document.getElementById('resumeBtn').addEventListener('click', () => {
+  requestFS().catch(()=>{});
+});
+
+/* ============ TAB / BLUR DETECTION ============ */
+document.addEventListener('visibilitychange', () => {
+  if(quizActive && !terminated && document.hidden){
+    const overLimit = logViolation('tab_switch');
+    if(overLimit) return;
+    pauseTimer();
+    document.getElementById('violationTag').textContent = `VIOLATION ${violations.length} / ${MAX_VIOLATIONS}`;
+    document.getElementById('lockdownTitle').textContent = 'Tab Switch Detected';
+    document.getElementById('lockdownMsg').textContent = `You left the exam tab. Return to fullscreen to continue. ${MAX_VIOLATIONS - violations.length} strike(s) remaining before the exam ends automatically.`;
+    lockdown.classList.remove('hidden');
+  }
+});
+window.addEventListener('blur', () => {
+  if(!quizActive || terminated) return;
+  if(!isFullscreen() || document.hidden) return; // avoid duplicate if fullscreen exit or tab switch already handled
+  const overLimit = logViolation('window_blur');
+  if(overLimit) return;
+  pauseTimer();
+  document.getElementById('violationTag').textContent = `VIOLATION ${violations.length} / ${MAX_VIOLATIONS}`;
+  document.getElementById('lockdownTitle').textContent = 'Window Focus Lost';
+  document.getElementById('lockdownMsg').textContent = `Focus left the exam window. Return to fullscreen to continue. ${MAX_VIOLATIONS - violations.length} strike(s) remaining before the exam ends automatically.`;
+  lockdown.classList.remove('hidden');
+});
+
+// Returns true if this violation triggered termination
+function logViolation(type){
+  if(terminated) return true;
+  const now = Date.now();
+  if(now - lastViolationTime < 1500){
+    return violations.length >= MAX_VIOLATIONS;
+  }
+  lastViolationTime = now;
+
+  violations.push({ type, question: currentIndex+1, at: new Date().toISOString() });
+  updateStrikeUI();
+  if(violations.length >= MAX_VIOLATIONS){
+    terminateExam();
+    return true;
+  }
+  return false;
+}
+
+function updateStrikeUI(){
+  const el = document.getElementById('strikeCount');
+  if(el) el.textContent = `Strikes: ${violations.length} / ${MAX_VIOLATIONS}`;
+}
+
+function terminateExam(){
+  if(terminated) return;
+  terminated = true;
+  quizActive = false;
+  clearInterval(timerInterval);
+  lockdown.classList.add('hidden');
+  // whatever question was in progress counts as unanswered if not already recorded
+  if(!answeredCurrent && questions[currentIndex]){
+    recordAnswer(null);
+  }
+  finishQuiz(true);
+}
+
+/* ============ COPY / PASTE / DEVTOOLS BLOCK ============ */
+['copy','cut','paste','contextmenu','selectstart','dragstart'].forEach(evt => {
+  document.addEventListener(evt, e => {
+    if(quizActive) e.preventDefault();
+  });
+});
+document.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  const blocked = (
+    (e.ctrlKey || e.metaKey) && ['c','v','x','u','s','p'].includes(k)
+  ) || k === 'f12' ||
+  ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i','j','c'].includes(k));
+  if(blocked){
+    e.preventDefault();
+    if(quizActive) logViolation('shortcut_blocked:' + k);
+  }
+});
+
+/* ============ TIMER ============ */
+function currentDuration(){
+  const q = questions[currentIndex];
+  return DIFFICULTY_CONFIG[q.difficulty].seconds;
+}
+function startTimer(){
+  timeLeft = currentDuration();
+  updateTimerUI();
+  timerInterval = setInterval(tick, 1000);
+}
+function pauseTimer(){ clearInterval(timerInterval); }
+function resumeTimer(){ timerInterval = setInterval(tick, 1000); }
+function tick(){
+  timeLeft--;
+  updateTimerUI();
+  if(timeLeft <= 0){
+    clearInterval(timerInterval);
+    handleTimeout();
+  }
+}
+function updateTimerUI(){
+  const pct = Math.max(0, (timeLeft/currentDuration())*100);
+  const fill = document.getElementById('timerFill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct < 30 ? 'linear-gradient(90deg,var(--bad),var(--horizon-3))' : 'linear-gradient(90deg,var(--ok),var(--horizon-4))';
+  document.getElementById('timerNum').textContent = Math.max(0,timeLeft) + 's';
+}
+function handleTimeout(){
+  if(answeredCurrent || terminated) return;
+  // pass to next question, keeping whatever was selected (or null = unanswered)
+  recordAnswer(selectedText);
+  advanceQuestion();
+}
+
+/* ============ QUIZ FLOW ============ */
+document.getElementById('startBtn').addEventListener('click', async () => {
+  participant.name = document.getElementById('pname').value.trim();
+  participant.team = document.getElementById('pteam').value.trim();
+  if(!participant.name){
+    document.getElementById('pname').focus();
+    document.getElementById('pname').style.borderColor = 'var(--bad)';
+    return;
+  }
+  await requestFS().catch(()=>{});
+  buildQuestions();
+  answers = [];
+  currentIndex = 0;
+  violations = [];
+  terminated = false;
+  startedAt = new Date().toISOString();
+  quizActive = true;
+  updateStrikeUI();
+  showScreen(quizScreen);
+  renderQuestion();
+});
+
+function renderQuestion(){
+  answeredCurrent = false;
+  selectedText = null;
+  const q = questions[currentIndex];
+  document.getElementById('qcount').textContent = `Question ${currentIndex+1} / ${questions.length}`;
+  const badge = document.getElementById('diffbadge');
+  const cfg = DIFFICULTY_CONFIG[q.difficulty];
+  badge.textContent = `${q.difficulty.toUpperCase()} · ${cfg.marks} MARK${cfg.marks>1?'S':''}`;
+  badge.className = 'diffbadge diff-' + q.difficulty;
+  document.getElementById('progressFill').style.width = (currentIndex/questions.length*100) + '%';
+  document.getElementById('qtitle').textContent = `Q${currentIndex+1} — ${q.title}`;
+  document.getElementById('qcode').textContent = q.code;
+
+  const optsWrap = document.getElementById('options');
+  optsWrap.innerHTML = '';
+  q.shuffledOptions.forEach(([label, text]) => {
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.innerHTML = `<span class="key">${label}</span><span class="val"></span>`;
+    div.querySelector('.val').textContent = text;
+    div.addEventListener('click', () => selectOption(div, text));
+    optsWrap.appendChild(div);
+  });
+  startTimer();
+}
+
+// Selecting an option just marks the choice — no reveal, no immediate advance.
+// The learner can still change their mind until time runs out, at which point
+// whatever is currently selected is what gets recorded.
+function selectOption(el, text){
+  if(answeredCurrent) return;
+  selectedText = text;
+  document.querySelectorAll('#options .opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function recordAnswer(chosenText){
+  answeredCurrent = true;
+  clearInterval(timerInterval);
+  const q = questions[currentIndex];
+  const isCorrect = chosenText !== null && chosenText === q.correct;
+  const marks = DIFFICULTY_CONFIG[q.difficulty].marks;
+  answers.push({
+    id: q.id,
+    title: q.title,
+    difficulty: q.difficulty,
+    maxMarks: marks,
+    marksAwarded: isCorrect ? marks : 0,
+    selected: chosenText,
+    isCorrect,
+    unanswered: chosenText === null
+  });
+}
+
+function advanceQuestion(){
+  currentIndex++;
+  if(currentIndex >= questions.length){
+    finishQuiz(false);
+  } else {
+    renderQuestion();
+  }
+}
+
+function finishQuiz(wasTerminated){
+  quizActive = false;
+  clearInterval(timerInterval);
+  document.getElementById('progressFill').style.width = '100%';
+  if(document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+
+  const totalPossible = questions.reduce((s,q)=> s + DIFFICULTY_CONFIG[q.difficulty].marks, 0);
+  const scoreMarks = answers.reduce((s,a)=> s + a.marksAwarded, 0);
+
+  const byDiff = { easy:{correct:0,total:0,marks:0}, medium:{correct:0,total:0,marks:0}, hard:{correct:0,total:0,marks:0} };
+  questions.forEach(q => { byDiff[q.difficulty].total++; });
+  answers.forEach(a => {
+    if(a.isCorrect){ byDiff[a.difficulty].correct++; byDiff[a.difficulty].marks += a.marksAwarded; }
+  });
+
+  document.getElementById('resultTitle').textContent = wasTerminated ? 'Exam Terminated' : 'Challenge Complete';
+  document.getElementById('scoreBig').textContent = `${scoreMarks} / ${totalPossible}`;
+  document.getElementById('bdEasy').textContent = `${byDiff.easy.correct}/${byDiff.easy.total}`;
+  document.getElementById('bdMedium').textContent = `${byDiff.medium.correct}/${byDiff.medium.total}`;
+  document.getElementById('bdHard').textContent = `${byDiff.hard.correct}/${byDiff.hard.total}`;
+
+  showScreen(resultScreen);
+
+  const statusEl = document.getElementById('submitStatus');
+  if(wasTerminated){
+    statusEl.textContent = `Exam ended after ${violations.length} violations. Submitting your result…`;
+  }
+
+  const answeredCount = answers.filter(a => !a.unanswered).length;
+  const unansweredCount = answers.filter(a => a.unanswered).length;
+  const remainingUnattempted = questions.length - answers.length; // never reached if terminated early
+
+  const payload = {
+    name: participant.name,
+    team: participant.team,
+    scoreMarks,
+    totalPossible,
+    questionsAnswered: answeredCount,
+    questionsUnanswered: unansweredCount + remainingUnattempted,
+    easyCorrect: `${byDiff.easy.correct}/${byDiff.easy.total}`,
+    mediumCorrect: `${byDiff.medium.correct}/${byDiff.medium.total}`,
+    hardCorrect: `${byDiff.hard.correct}/${byDiff.hard.total}`,
+    terminated: wasTerminated,
+    violationCount: violations.length,
+    violations: JSON.stringify(violations),
+    startedAt,
+    finishedAt: new Date().toISOString(),
+    answers: JSON.stringify(answers)
+  };
+
+  // Local backup in case network fails
+  try{
+    const key = 'dh_result_' + Date.now();
+    localStorage.setItem(key, JSON.stringify(payload));
+  }catch(e){}
+
+  submitResult(payload, wasTerminated);
+}
+
+function submitResult(payload, wasTerminated){
+  const statusEl = document.getElementById('submitStatus');
+  if(!SHEET_WEBHOOK_URL || SHEET_WEBHOOK_URL.indexOf('PASTE_YOUR') === 0){
+    statusEl.textContent = 'Not submitted — conductor has not configured the Google Sheet link yet. Your result is saved locally in this browser.';
+    return;
+  }
+  fetch(SHEET_WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload)
+  }).then(() => {
+    statusEl.textContent = wasTerminated
+      ? 'Terminated result submitted to the conductor. You can close this tab.'
+      : 'Result submitted to the conductor. You can close this tab.';
+  }).catch(() => {
+    statusEl.textContent = 'Could not reach the server. Your result was saved locally — please tell the conductor.';
+  });
+}
+</script>
+</body>
+</html>
