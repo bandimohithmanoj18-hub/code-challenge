@@ -571,6 +571,9 @@ app.post('/api/admin/team-action', authAdmin, (req, res) => {
     session.status = 'DISQUALIFIED';
     session.finishedAt = new Date().toISOString();
   } else if (action === 'reset') {
+    if (session.token) {
+      delete tokenToTeamMap[session.token];
+    }
     delete teamSessions[teamId];
     const team = teamsData.find(t => t.id === teamId);
     if (team) getOrCreateTeamSession(team);

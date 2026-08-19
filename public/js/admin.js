@@ -140,6 +140,7 @@
         <td style="font-family:var(--mono); color: ${t.violationsCount > 0 ? 'var(--bad)' : 'var(--text-dim)'};">${t.violationsCount} / 3</td>
         <td>
           <button class="btn" onclick="window.viewAuditLogs('${t.teamId}')" style="padding:4px 8px; font-size:11px;">Logs</button>
+          <button class="btn" onclick="window.resetTeamSession('${t.teamId}')" style="padding:4px 8px; font-size:11px;" title="Reset team session for fresh login">Reset</button>
           <button class="btn btn-danger" onclick="window.forceSubmitTeam('${t.teamId}')" style="padding:4px 8px; font-size:11px;">Submit</button>
           <button class="btn btn-danger" onclick="window.disqualifyTeam('${t.teamId}')" style="padding:4px 8px; font-size:11px;">DQ</button>
         </td>
@@ -531,6 +532,16 @@
       method: 'POST',
       headers: adminHeaders(),
       body: JSON.stringify({ teamId, action: 'force-submit' })
+    });
+    fetchOverview();
+  };
+
+  window.resetTeamSession = async function(teamId) {
+    if (!confirm(`Reset session for ${teamId}? This will clear their current exam progress and allow a fresh login.`)) return;
+    await fetch('/api/admin/team-action', {
+      method: 'POST',
+      headers: adminHeaders(),
+      body: JSON.stringify({ teamId, action: 'reset' })
     });
     fetchOverview();
   };
