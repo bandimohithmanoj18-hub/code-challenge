@@ -12,9 +12,32 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Load static databases & persistence
-const TEAMS_FILE = path.join(__dirname, 'data', 'teams.json');
+const IS_VERCEL = !!process.env.VERCEL;
+const DATA_DIR = IS_VERCEL ? '/tmp/quiz_data' : path.join(__dirname, 'data');
+const ORIGINAL_DATA_DIR = path.join(__dirname, 'data');
+
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+const TEAMS_FILE = path.join(DATA_DIR, 'teams.json');
+const STATE_FILE = path.join(DATA_DIR, 'state.json');
+const ARCHIVES_DIR = path.join(DATA_DIR, 'archives');
+
+if (!fs.existsSync(ARCHIVES_DIR)) {
+  fs.mkdirSync(ARCHIVES_DIR, { recursive: true });
+}
+
+if (!fs.existsSync(TEAMS_FILE)) {
+  const origTeams = path.join(ORIGINAL_DATA_DIR, 'teams.json');
+  if (fs.existsSync(origTeams)) {
+    fs.copyFileSync(origTeams, TEAMS_FILE);
+  }
+}
+
 let teamsData = JSON.parse(fs.readFileSync(TEAMS_FILE, 'utf8'));
-const questionsData = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'questions.json'), 'utf8'));
+const questionsFile = fs.existsSync(path.join(DATA_DIR, 'questions.json')) ? path.join(DATA_DIR, 'questions.json') : path.join(ORIGINAL_DATA_DIR, 'questions.json');
+const questionsData = JSON.parse(fs.readFileSync(questionsFile, 'utf8'));
 
 function saveTeamsData() {
   try {
@@ -22,12 +45,6 @@ function saveTeamsData() {
   } catch (e) {
     console.error('Error saving teams file:', e.message);
   }
-}
-
-// Archives directory & helper
-const ARCHIVES_DIR = path.join(__dirname, 'data', 'archives');
-if (!fs.existsSync(ARCHIVES_DIR)) {
-  fs.mkdirSync(ARCHIVES_DIR, { recursive: true });
 }
 
 function archiveCurrentSession() {
@@ -70,8 +87,6 @@ let quizState = 'NOT_STARTED'; // 'NOT_STARTED', 'IN_PROGRESS', 'PAUSED', 'ENDED
 let teamSessions = {}; // key: teamId -> team session object
 let tokenToTeamMap = {}; // key: token -> teamId
 let adminTokens = new Set();
-
-const STATE_FILE = path.join(__dirname, 'data', 'state.json');
 
 // Restore state if file exists
 function loadState() {
@@ -779,10 +794,14 @@ app.get('/api/admin/archives/:filename/export', authAdmin, (req, res) => {
   res.send(csv);
 });
 
-app.listen(PORT, () => {
-  console.log(`==================================================`);
-  console.log(`Digital Horizon Level 1 Quiz Server active on port ${PORT}`);
-  console.log(`Participant Portal: http://localhost:${PORT}`);
-  console.log(`Admin Dashboard:    http://localhost:${PORT}/admin.html`);
-  console.log(`==================================================`);
-});
+if (process.env.VERCEL) {
+  module.exports = app;
+} else {
+  app.listen(PORT, () => {
+    console.log(`==================================================`);
+    console.log(`Digital Horizon Level 1 Quiz Server active on port ${PORT}`);
+    console.log(`Participant Portal: http://localhost:${PORT}`);
+    console.log(`Admin Dashboard:    http://localhost:${PORT}/admin.html`);
+    console.log(`==================================================`);
+  });
+}
